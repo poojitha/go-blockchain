@@ -39,7 +39,7 @@ func (bc *Block) Print() {
 	
 	for _, row := range bc.transactions {
 		fmt.Printf("%s\n",strings.Repeat("-",40))
-		fmt.Println("Recipient 	: ", row.recipientTransactions)
+		fmt.Println("Recipient 	: ", row.recipientBlockChainAddress)
 		fmt.Println("Sender	: ", row.senderBlockChainAddress)
 		fmt.Println("Value	: ", row.value)
 		fmt.Printf("%s\n",strings.Repeat("-",40))
@@ -105,7 +105,7 @@ func (bc *Blockchain) AddTransaction(sender string, recipient string, value floa
 func (bc *Blockchain) CopyTransactionPool() []*Transaction {
 	transactions := make([] *Transaction,0)
 	for  _,t := range bc.transactionPool{
-		transactions = append(transactions, NewTransaction(t.recipientTransactions,t.senderBlockChainAddress,t.value))
+		transactions = append(transactions, NewTransaction(t.recipientBlockChainAddress,t.senderBlockChainAddress,t.value))
 	}
 
 	return transactions
@@ -136,9 +136,25 @@ func  (bc *Blockchain) Mining() bool{
 	return true
 }
 
+func  (bc *Blockchain) CalculateTotalAmount(blockchainAddress string) float32{
+	var totalAmount float32 = 0.0
+	for _ , b := range bc.chain {
+		for _,t := range b.transactions {
+			value := t.value
+			if(blockchainAddress == t.recipientBlockChainAddress) {
+				totalAmount += value 
+			}
+			if(blockchainAddress == t.senderBlockChainAddress) {
+				totalAmount -= value 
+			}
+		}
+	}
+	return totalAmount
+}
+
 type Transaction struct {
 	senderBlockChainAddress string
-	recipientTransactions string
+	recipientBlockChainAddress string
 	value float32
 }
 
@@ -151,18 +167,18 @@ func NewTransaction(sender string,recipient string,value  float32)*Transaction {
 func (t *Transaction) Print() {	
 		fmt.Printf("%s\n",strings.Repeat("-",40))
 		fmt.Printf("sender_blockchain_address %s\n", t.senderBlockChainAddress)
-		fmt.Printf("recipeient_blockchain_address %s\n", t.recipientTransactions)
+		fmt.Printf("recipeient_blockchain_address %s\n", t.recipientBlockChainAddress)
 		fmt.Printf("value %.1f\n", t.value)
 }
 
 func (t *Transaction) MarshalJSON() ([]byte, error) {
     return json.Marshal(struct {
         SenderBlockChainAddress string `json:"sender_blockchain_address"` 
-		RecipientTransactions string `json:"recipeient_blockchain_address"` 
+		RecipientBlockChainAddress string `json:"recipeient_blockchain_address"` 
 		Value float32 `json:"value"` 
     }{
         SenderBlockChainAddress: t.senderBlockChainAddress,                  
-        RecipientTransactions: t.recipientTransactions, 
+        RecipientBlockChainAddress: t.recipientBlockChainAddress, 
         Value: t.value,
     })
 }
@@ -182,4 +198,9 @@ func main() {
 	chain.AddTransaction("G","H",67)
 	chain.Mining()
 	chain.Print()
+
+	fmt.Printf("C %.1f \n",chain.CalculateTotalAmount("C"))
+	fmt.Printf("A %.1f \n",chain.CalculateTotalAmount("A"))
+	fmt.Printf("B %.1f \n",chain.CalculateTotalAmount("B"))
+	fmt.Printf("Miner %.1f \n",chain.CalculateTotalAmount("my_address"))
 }
