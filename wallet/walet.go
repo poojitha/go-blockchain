@@ -14,14 +14,14 @@ import (
 )
 
 type Wallet struct {
-	privateKey *ecdsa.PrivateKey
-	publicKey *ecdsa.PublicKey
+	privateKey        *ecdsa.PrivateKey
+	publicKey         *ecdsa.PublicKey
 	blockchainAddress string
 }
 
-func NewWallet()  * Wallet {
+func NewWallet() *Wallet {
 	w := new(Wallet)
-	privateKey,_ := ecdsa.GenerateKey(elliptic.P256(),rand.Reader)
+	privateKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	w.privateKey = privateKey
 	w.publicKey = &w.privateKey.PublicKey
 
@@ -34,9 +34,9 @@ func NewWallet()  * Wallet {
 	h3.Write(digest2)
 	digest3 := h2.Sum(nil)
 
-	vd4 := make([]byte,21)
-    vd4[0] =  0x00
-	copy(vd4[1:],digest3[:])
+	vd4 := make([]byte, 21)
+	vd4[0] = 0x00
+	copy(vd4[1:], digest3[:])
 
 	h5 := sha256.New()
 	h5.Write(vd4)
@@ -48,9 +48,9 @@ func NewWallet()  * Wallet {
 
 	chsum := digest6[:4]
 
-	dc8 := make([]byte,25)
-	copy(dc8[:21],vd4[:])
-	copy(dc8[:21],chsum[:])
+	dc8 := make([]byte, 25)
+	copy(dc8[:21], vd4[:])
+	copy(dc8[:21], chsum[:])
 
 	address := base58.Encode(dc8)
 	w.blockchainAddress = address
@@ -58,54 +58,54 @@ func NewWallet()  * Wallet {
 	return w
 }
 
-func(w *Wallet)  PrivateKey() *ecdsa.PrivateKey {
-	return w.privateKey 
+func (w *Wallet) PrivateKey() *ecdsa.PrivateKey {
+	return w.privateKey
 }
 
-func(w *Wallet)  PrivateKeyStr() string {
-	return fmt.Sprintf("%x",w.privateKey.D.Bytes())
+func (w *Wallet) PrivateKeyStr() string {
+	return fmt.Sprintf("%x", w.privateKey.D.Bytes())
 }
 
-func(w *Wallet)  PublicKey() *ecdsa.PublicKey {
-	return w.publicKey 
+func (w *Wallet) PublicKey() *ecdsa.PublicKey {
+	return w.publicKey
 }
 
-func(w *Wallet)  PublicKeyStr() string {
-	return fmt.Sprintf("%x%x",w.publicKey.X.Bytes(),w.publicKey.Y.Bytes())
+func (w *Wallet) PublicKeyStr() string {
+	return fmt.Sprintf("%x%x", w.publicKey.X.Bytes(), w.publicKey.Y.Bytes())
 }
 
-func(w *Wallet)  BlockchainAddress() string {
+func (w *Wallet) BlockchainAddress() string {
 	return w.blockchainAddress
 }
 
 type Transaction struct {
-	senderPrivateKey *ecdsa.PrivateKey
-	senderPublicKey *ecdsa.PublicKey
-	senderBlockchainAddress string
+	senderPrivateKey           *ecdsa.PrivateKey
+	senderPublicKey            *ecdsa.PublicKey
+	senderBlockchainAddress    string
 	recipientBlockchainAddress string
-	value float32
+	value                      float32
 }
 
-func NewTransaction(privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, sender  string,recipient string, value float32) *Transaction{
-	return &Transaction{privateKey,publicKey,sender,recipient,value}
+func NewTransaction(privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, sender string, recipient string, value float32) *Transaction {
+	return &Transaction{privateKey, publicKey, sender, recipient, value}
 }
 
-func(t *Transaction)  GeenerateSignature()  *Signature {
-	m,_ := json.Marshal(t)
-	h  := sha256.Sum256([] byte(m))
-	r,s, _ := ecdsa.Sign(rand.Reader,t.senderPrivateKey,h[:])
-	return &Signature{r,s}
+func (t *Transaction) GeenerateSignature() *Signature {
+	m, _ := json.Marshal(t)
+	h := sha256.Sum256([]byte(m))
+	r, s, _ := ecdsa.Sign(rand.Reader, t.senderPrivateKey, h[:])
+	return &Signature{r, s}
 }
 
-func(t *Transaction)  MarshalJson() ([]byte,error)  {
-	return  json.Marshal(struct {
-		Sender string `json:"sender_blockchain_address"`
-		Recipient string `json:"recipient_blockchain_address"`
-		Value float32 `json:"value"`
+func (t *Transaction) MarshalJson() ([]byte, error) {
+	return json.Marshal(struct {
+		Sender    string  `json:"sender_blockchain_address"`
+		Recipient string  `json:"recipient_blockchain_address"`
+		Value     float32 `json:"value"`
 	}{
-		Sender : t.senderBlockchainAddress,
-		Recipient : t.recipientBlockchainAddress,
-		Value  : t.value,
+		Sender:    t.senderBlockchainAddress,
+		Recipient: t.recipientBlockchainAddress,
+		Value:     t.value,
 	})
 }
 
@@ -115,5 +115,5 @@ type Signature struct {
 }
 
 func (s *Signature) String() string {
-	return fmt.Sprintf("%x%x",s.R,s.S)
+	return fmt.Sprintf("%x%x", s.R, s.S)
 }
