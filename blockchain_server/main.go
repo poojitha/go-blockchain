@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 )
 
@@ -11,10 +10,8 @@ func init() {
 }
 
 func main() {
-	port := flag.Uint("port", 5000, "TCP port number for Blockchian Server")
+	port := flag.Uint("port", 5000, "TCP Port Number for Blockchain Server")
 	flag.Parse()
-	fmt.Println(*port)
 	app := NewBlockchainServer(uint16(*port))
 	app.Run()
-
 }
